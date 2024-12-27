@@ -8,63 +8,100 @@ declare_id!("coUnmi3oBUtwtd9fjeAvSsJssXh5A5xyPbhpewyzRVF");
 pub mod crud {
     use super::*;
 
-  pub fn close(_ctx: Context<CloseCrud>) -> Result<()> {
-    Ok(())
-  }
+    pub fn create_journal(
+        ctx: Context<CreateJournal>,
+        title: String,
+        message: String,
+    ) -> Result<()> {
+        let journal = &mut ctx.accounts.journal;
+        journal.owner = ctx.accounts.signer.key(); // *ctx.accounts.signer.key
+        journal.title = title;
+        journal.message = message;
+        msg!(
+            "title =  {}, owner = {}",
+            journal.title,
+            journal.owner.key().to_string()
+        );
+        Ok(())
+    }
 
-  pub fn decrement(ctx: Context<Update>) -> Result<()> {
-    ctx.accounts.crud.count = ctx.accounts.crud.count.checked_sub(1).unwrap();
-    Ok(())
-  }
+    pub fn update_journal(
+        ctx: Context<UpdateJournal>,
+        _title: String,
+        message: String,
+    ) -> Result<()> {
+        let journal = &mut ctx.accounts.journal;
+        journal.message = message;
+        msg!(
+            "nessage =  {}, owner = {}",
+            journal.message,
+            journal.owner.key().to_string()
+        );
+        Ok(())
+    }
 
-  pub fn increment(ctx: Context<Update>) -> Result<()> {
-    ctx.accounts.crud.count = ctx.accounts.crud.count.checked_add(1).unwrap();
-    Ok(())
-  }
-
-  pub fn initialize(_ctx: Context<InitializeCrud>) -> Result<()> {
-    Ok(())
-  }
-
-  pub fn set(ctx: Context<Update>, value: u8) -> Result<()> {
-    ctx.accounts.crud.count = value.clone();
-    Ok(())
-  }
+    pub fn delete_journal(_ctx: Context<CreateJournal>, _title: String) -> Result<()> {
+        Ok(())
+    }
 }
 
 #[derive(Accounts)]
-pub struct InitializeCrud<'info> {
-  #[account(mut)]
-  pub payer: Signer<'info>,
+#[instruction(title: String)]
+pub struct CreateJournal<'info> {
+    #[account(mut)]
+    pub signer: Signer<'info>,
 
-  #[account(
-  init,
-  space = 8 + Crud::INIT_SPACE,
-  payer = payer
+    #[account(
+    init,
+    payer= signer,
+    space = 8 + Journal::INIT_SPACE,
+    seeds = [title.as_bytes(), signer.key().as_ref()],
+    bump
   )]
-  pub crud: Account<'info, Crud>,
-  pub system_program: Program<'info, System>,
+    pub journal: Account<'info, Journal>,
+    pub system_program: Program<'info, System>,
 }
-#[derive(Accounts)]
-pub struct CloseCrud<'info> {
-  #[account(mut)]
-  pub payer: Signer<'info>,
 
-  #[account(
-  mut,
-  close = payer, // close account and return lamports to payer
+#[derive(Accounts)]
+#[instruction(title: String)]
+pub struct UpdateJournal<'info> {
+    #[account(mut)]
+    pub signer: Signer<'info>,
+
+    #[account(
+    mut,
+    seeds = [title.as_bytes(), signer.key().as_ref()],
+    bump,
+    realloc = 8 + Journal::INIT_SPACE,
+    realloc::payer = signer,
+    realloc::zero = true
   )]
-  pub crud: Account<'info, Crud>,
+    pub journal: Account<'info, Journal>,
+    pub system_program: Program<'info, System>,
 }
 
 #[derive(Accounts)]
-pub struct Update<'info> {
-  #[account(mut)]
-  pub crud: Account<'info, Crud>,
+#[instruction(title: String)]
+pub struct DeleteJournal<'info> {
+    #[account(mut)]
+    pub signer: Signer<'info>,
+
+    #[account(
+      mut,
+      seeds = [title.as_bytes(), signer.key().as_ref()],
+      bump,
+      close = signer
+    )]
+    pub journal: Account<'info, Journal>,
+    pub system_program: Program<'info, System>,
 }
 
 #[account]
 #[derive(InitSpace)]
-pub struct Crud {
-  count: u8,
+pub struct Journal {
+    pub owner: Pubkey,
+    #[max_len(200)]
+    pub title: String,
+    #[max_len(200)]
+    pub message: String,
 }

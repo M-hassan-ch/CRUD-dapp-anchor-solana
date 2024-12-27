@@ -14,150 +14,184 @@ export type Crud = {
   },
   "instructions": [
     {
-      "name": "close",
+      "name": "createJournal",
       "discriminator": [
-        98,
-        165,
-        201,
-        177,
-        108,
-        65,
-        206,
-        96
+        254,
+        225,
+        80,
+        162,
+        90,
+        16,
+        247,
+        228
       ],
       "accounts": [
         {
-          "name": "payer",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
         {
-          "name": "crud",
-          "writable": true
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "decrement",
-      "discriminator": [
-        106,
-        227,
-        168,
-        59,
-        248,
-        27,
-        150,
-        101
-      ],
-      "accounts": [
-        {
-          "name": "crud",
-          "writable": true
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "increment",
-      "discriminator": [
-        11,
-        18,
-        104,
-        9,
-        104,
-        174,
-        59,
-        33
-      ],
-      "accounts": [
-        {
-          "name": "crud",
-          "writable": true
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "initialize",
-      "discriminator": [
-        175,
-        175,
-        109,
-        31,
-        13,
-        152,
-        155,
-        237
-      ],
-      "accounts": [
-        {
-          "name": "payer",
+          "name": "journal",
           "writable": true,
-          "signer": true
-        },
-        {
-          "name": "crud",
-          "writable": true,
-          "signer": true
+          "pda": {
+            "seeds": [
+              {
+                "kind": "arg",
+                "path": "title"
+              },
+              {
+                "kind": "account",
+                "path": "signer"
+              }
+            ]
+          }
         },
         {
           "name": "systemProgram",
           "address": "11111111111111111111111111111111"
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "name": "message",
+          "type": "string"
+        }
+      ]
     },
     {
-      "name": "set",
+      "name": "deleteJournal",
       "discriminator": [
-        198,
-        51,
-        53,
-        241,
-        116,
-        29,
-        126,
-        194
+        168,
+        71,
+        15,
+        72,
+        240,
+        5,
+        97,
+        90
       ],
       "accounts": [
         {
-          "name": "crud",
-          "writable": true
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "journal",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "arg",
+                "path": "title"
+              },
+              {
+                "kind": "account",
+                "path": "signer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
         {
-          "name": "value",
-          "type": "u8"
+          "name": "title",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "updateJournal",
+      "discriminator": [
+        154,
+        82,
+        119,
+        184,
+        104,
+        187,
+        45,
+        83
+      ],
+      "accounts": [
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "journal",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "arg",
+                "path": "title"
+              },
+              {
+                "kind": "account",
+                "path": "signer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "name": "message",
+          "type": "string"
         }
       ]
     }
   ],
   "accounts": [
     {
-      "name": "crud",
+      "name": "journal",
       "discriminator": [
-        255,
-        176,
-        4,
-        245,
-        188,
-        253,
-        124,
-        25
+        246,
+        141,
+        106,
+        208,
+        98,
+        92,
+        66,
+        208
       ]
     }
   ],
   "types": [
     {
-      "name": "crud",
+      "name": "journal",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "count",
-            "type": "u8"
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "title",
+            "type": "string"
+          },
+          {
+            "name": "message",
+            "type": "string"
           }
         ]
       }
