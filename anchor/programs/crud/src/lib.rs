@@ -2,7 +2,7 @@
 
 use anchor_lang::prelude::*;
 
-declare_id!("coUnmi3oBUtwtd9fjeAvSsJssXh5A5xyPbhpewyzRVF");
+declare_id!("CiNsTdSqm7a9eguXWF8zDwvvGrJNXmShj4mRvj4WsMjb");
 
 #[program]
 pub mod crud {
@@ -40,7 +40,7 @@ pub mod crud {
         Ok(())
     }
 
-    pub fn delete_journal(_ctx: Context<CreateJournal>, _title: String) -> Result<()> {
+    pub fn delete_journal(_ctx: Context<DeleteJournal>, _title: String) -> Result<()> {
         Ok(())
     }
 }

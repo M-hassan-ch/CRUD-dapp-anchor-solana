@@ -10,6 +10,12 @@ import { useCluster } from '../cluster/cluster-data-access'
 import { useAnchorProvider } from '../solana/solana-provider'
 import { useTransactionToast } from '../ui/ui-layout'
 
+interface CreateJournalArgs {
+  owner: PublicKey;
+  title: string;
+  message: string;
+}
+
 export function useCrudProgram() {
   const { connection } = useConnection()
   const { cluster } = useCluster()
@@ -20,7 +26,7 @@ export function useCrudProgram() {
 
   const accounts = useQuery({
     queryKey: ['crud', 'all', { cluster }],
-    queryFn: () => program.account.crud.all(),
+    queryFn: () => program.account.journal.all(),
   })
 
   const getProgramAccount = useQuery({
@@ -28,23 +34,26 @@ export function useCrudProgram() {
     queryFn: () => connection.getParsedAccountInfo(programId),
   })
 
-  const initialize = useMutation({
-    mutationKey: ['crud', 'initialize', { cluster }],
-    mutationFn: (keypair: Keypair) =>
-      program.methods.initialize().accounts({ crud: keypair.publicKey }).signers([keypair]).rpc(),
+  const createJournal = useMutation<string, Error, CreateJournalArgs>({
+    mutationKey: ['journal', 'create', { cluster }],
+    mutationFn: async ({ title, message: description }) => {
+      console.log('getting title ', title);
+      return program.methods.createJournal(title, description).rpc()
+    },
     onSuccess: (signature) => {
       transactionToast(signature)
       return accounts.refetch()
     },
-    onError: () => toast.error('Failed to initialize account'),
+    onError: () => toast.error('Failed to initialize create journal account tx'),
   })
+
 
   return {
     program,
     programId,
     accounts,
     getProgramAccount,
-    initialize,
+    createJournal,
   }
 }
 
@@ -55,50 +64,38 @@ export function useCrudProgramAccount({ account }: { account: PublicKey }) {
 
   const accountQuery = useQuery({
     queryKey: ['crud', 'fetch', { cluster, account }],
-    queryFn: () => program.account.crud.fetch(account),
+    queryFn: () => program.account.journal.fetch(account),
   })
 
-  const closeMutation = useMutation({
-    mutationKey: ['crud', 'close', { cluster, account }],
-    mutationFn: () => program.methods.close().accounts({ crud: account }).rpc(),
-    onSuccess: (tx) => {
-      transactionToast(tx)
+  const updateJournal = useMutation<string, Error, CreateJournalArgs>({
+    mutationKey: ['journal', 'update', { cluster }],
+    mutationFn: async ({ title, message: description }) => {
+      return program.methods.updateJournal(title, description).rpc();
+    },
+    onSuccess: (signature) => {
+      transactionToast(signature)
       return accounts.refetch()
     },
+    onError: () => toast.error('Failed to initialize update journal account tx'),
   })
 
-  const decrementMutation = useMutation({
-    mutationKey: ['crud', 'decrement', { cluster, account }],
-    mutationFn: () => program.methods.decrement().accounts({ crud: account }).rpc(),
-    onSuccess: (tx) => {
-      transactionToast(tx)
-      return accountQuery.refetch()
+  const deleteJournal = useMutation({
+    mutationKey: ['journal', 'delete', { cluster }],
+    mutationFn: async (title: string) => {
+      console.log('getting title ', title);
+      
+      return program.methods.deleteJournal(title).rpc();
     },
-  })
-
-  const incrementMutation = useMutation({
-    mutationKey: ['crud', 'increment', { cluster, account }],
-    mutationFn: () => program.methods.increment().accounts({ crud: account }).rpc(),
-    onSuccess: (tx) => {
-      transactionToast(tx)
-      return accountQuery.refetch()
+    onSuccess: (signature) => {
+      transactionToast(signature)
+      return accounts.refetch()
     },
-  })
-
-  const setMutation = useMutation({
-    mutationKey: ['crud', 'set', { cluster, account }],
-    mutationFn: (value: number) => program.methods.set(value).accounts({ crud: account }).rpc(),
-    onSuccess: (tx) => {
-      transactionToast(tx)
-      return accountQuery.refetch()
-    },
+    onError: () => toast.error('Failed to initialize delete journal account tx'),
   })
 
   return {
     accountQuery,
-    closeMutation,
-    decrementMutation,
-    incrementMutation,
-    setMutation,
+    deleteJournal,
+    updateJournal,
   }
 }
